@@ -8,18 +8,18 @@ public class RotateAboutCamera : MonoBehaviour
 {
     public Text latitudeText;
     public Text longitudeText;
-    public float speedHorizontal = 180.0f;
-    public float speedVertical = 90.0f;
-    public float minFieldOfView = 1.0f;
-    public float maxFieldOfView = 90.0f;
+    public float speedHorizontal = 180f;
+    public float speedVertical = 90f;
+    public float minFieldOfView = 1f;
+    public float maxFieldOfView = 90f;
 
-    private static float sqrt2 = Mathf.Sqrt(2);
+    private static float sqrt2 = Mathf.Sqrt(2f);
 
     private Vector3 dragOrigin = Vector3.zero;
     private bool isDragging = false;
-    private float latitude = 0.0f;
-    private float longitude = 0.0f;
-    private float zoom = 1.0f;
+    private float latitude = 0f;
+    private float longitude = 0f;
+    private float zoom = 1f;
     private Camera cameraObject;
 
     void Start()
@@ -46,18 +46,28 @@ public class RotateAboutCamera : MonoBehaviour
         {
             Vector3 position = Camera.main.ScreenToViewportPoint(Input.mousePosition - dragOrigin);
             dragOrigin = Input.mousePosition;
+
+            // Clamp latitude to -90, 90
             latitude -= position.y * speedVertical * zoom;
+            latitude = Mathf.Clamp(latitude, -90f, 90f);
+
+            // Wrap longitude in -180, 180
             longitude -= position.x * speedHorizontal * zoom;
+            longitude += 180;
+            longitude %= 360;
+            longitude += 360;
+            longitude %= 360;
+            longitude -= 180;
 
             update = true;
         }
 
-        if (Input.mouseScrollDelta.y < 0)
+        if (Input.mouseScrollDelta.y < 0f)
         {
             zoom *= sqrt2;
             update = true;
         }
-        else if (Input.mouseScrollDelta.y > 0)
+        else if (Input.mouseScrollDelta.y > 0f)
         {
             zoom /= sqrt2;
             update = true;
@@ -90,6 +100,6 @@ public class RotateAboutCamera : MonoBehaviour
 
     Quaternion CalculateRotation()
     {
-        return Quaternion.Euler(latitude, -longitude, 0);
+        return Quaternion.Euler(latitude, -longitude, 0f);
     }
 }

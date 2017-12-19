@@ -8,9 +8,10 @@ public class RotateAboutCamera : MonoBehaviour
 {
     public Text latitudeText;
     public Text longitudeText;
+    public Text zoomText;
     public float speedHorizontal = 180f;
     public float speedVertical = 90f;
-    public float minFieldOfView = 1f;
+    public float minFieldOfView = 0f;
     public float maxFieldOfView = 90f;
 
     private static float sqrt2 = Mathf.Sqrt(2f);
@@ -86,6 +87,7 @@ public class RotateAboutCamera : MonoBehaviour
         cameraObject.fieldOfView = CalculateFieldOfView();
         latitudeText.text = "Latitude: " + latitude;
         longitudeText.text = "Longitude: " + longitude;
+        zoomText.text = "Zoom: " + zoom;
     }
 
     float CalculateFieldOfView()

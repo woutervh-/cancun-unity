@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EarthTextures : MonoBehaviour
 {
+    public Text areaText;
+
     private string url = "https://api.tomtom.com/map/1/tile/basic/main/0/0/0.png?key=zu3b4a3g2x87pc2sdqeb6put";
 
     // Use this for initialization
@@ -21,6 +24,9 @@ public class EarthTextures : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        Vector3 center = Camera.main.WorldToScreenPoint(new Vector3(0f, 0f, 0f));
+        Vector3 right = Camera.main.WorldToScreenPoint(new Vector3(0.5f, 0f, 0f));
+        float radius = Vector3.Distance(center, right);
+        areaText.text = "Radius: " + radius;
     }
 }

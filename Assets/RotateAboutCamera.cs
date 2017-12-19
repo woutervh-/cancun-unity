@@ -14,8 +14,8 @@ public class RotateAboutCamera : MonoBehaviour
     
     private Vector3 dragOrigin = Vector3.zero;
     private bool isDragging = false;
-    private float yaw = 0.0f;
-    private float pitch = 0.0f;
+    private float latitude = 0.0f;
+    private float longitude = 0.0f;
     
     void Start()
     {
@@ -38,8 +38,8 @@ public class RotateAboutCamera : MonoBehaviour
         {
             Vector3 position = Camera.main.ScreenToViewportPoint(Input.mousePosition - dragOrigin);
             dragOrigin = Input.mousePosition;
-            yaw += position.x * speedHorizontal;
-            pitch += -position.y * speedVertical;
+            latitude -= position.y * speedVertical;
+            longitude -= position.x * speedHorizontal;
 
             UpdateValues();
         }
@@ -49,8 +49,8 @@ public class RotateAboutCamera : MonoBehaviour
     {
         transform.position = CalculatePosition();
         transform.rotation = CalculateRotation();
-        latitudeText.text = "Latitude: " + pitch;
-        longitudeText.text = "Longitude: " + yaw;
+        latitudeText.text = "Latitude: " + latitude;
+        longitudeText.text = "Longitude: " + longitude;
     }
 
     Vector3 CalculatePosition()
@@ -60,6 +60,6 @@ public class RotateAboutCamera : MonoBehaviour
 
     Quaternion CalculateRotation()
     {
-        return Quaternion.Euler(pitch, yaw, 0);
+        return Quaternion.Euler(latitude, -longitude, 0);
     }
 }

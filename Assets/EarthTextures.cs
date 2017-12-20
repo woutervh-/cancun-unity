@@ -24,9 +24,10 @@ public class EarthTextures : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 center = Camera.main.WorldToScreenPoint(new Vector3(0f, 0f, 0f));
-        Vector3 right = Camera.main.WorldToScreenPoint(new Vector3(0.5f, 0f, 0f));
-        float radius = Vector3.Distance(center, right);
-        areaText.text = "Radius: " + radius;
+        float unitPixelRadius = (Camera.main.projectionMatrix * Vector3.right).x * Camera.main.pixelWidth;
+        float earthPixelRadius = unitPixelRadius / 2;
+        float earthPixelArea = Mathf.PI * earthPixelRadius * earthPixelRadius;
+
+        areaText.text = "Area: " + earthPixelArea;
     }
 }

@@ -66,6 +66,7 @@ public class RotateAboutCamera : MonoBehaviour
         if (Input.mouseScrollDelta.y < 0f)
         {
             zoom *= sqrt2;
+            zoom = Mathf.Min(zoom, 1f);
             update = true;
         }
         else if (Input.mouseScrollDelta.y > 0f)

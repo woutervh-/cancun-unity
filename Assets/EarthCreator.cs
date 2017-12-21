@@ -58,6 +58,8 @@ public static class EarthCreator
     {
         int v = 0, vBottom = 0, t = 0;
 
+        float minY = 0, maxY = 0.5f;
+
         for (int i = 0; i < 4; i++)
         {
             vertices[v++] = Vector3.down;

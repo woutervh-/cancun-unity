@@ -9,12 +9,19 @@ public class Earth : MonoBehaviour
     public Text areaText;
 
     [Range(0, 6)]
-    public int subdivisions = 3;
+    public int subdivisions = 4;
 
     private static int tileSize = 256;
 
     private string url = "https://api.tomtom.com/map/1/tile/basic/main/0/0/0.png?key=zu3b4a3g2x87pc2sdqeb6put";
-    
+
+    private string[] urls = new string[] {
+        "https://api.tomtom.com/map/1/tile/basic/main/1/0/0.png?key=zu3b4a3g2x87pc2sdqeb6put",
+        "https://api.tomtom.com/map/1/tile/basic/main/1/1/0.png?key=zu3b4a3g2x87pc2sdqeb6put",
+        "https://api.tomtom.com/map/1/tile/basic/main/1/0/1.png?key=zu3b4a3g2x87pc2sdqeb6put",
+        "https://api.tomtom.com/map/1/tile/basic/main/1/1/1.png?key=zu3b4a3g2x87pc2sdqeb6put"
+    };
+
     // Use this for initialization
     private IEnumerator Start()
     {
@@ -36,13 +43,44 @@ public class Earth : MonoBehaviour
 
     public IEnumerator GenerateTexture()
     {
-        Texture2D texture = new Texture2D(tileSize, tileSize, TextureFormat.RGB24, false);
-        texture.filterMode = FilterMode.Trilinear;
-        texture.anisoLevel = 9;
-        WWW www = new WWW(url);
-        yield return www;
-        www.LoadImageIntoTexture(texture);
-        GetComponent<Renderer>().material.mainTexture = texture;
+        //WWW www = new WWW(url);
+        //yield return www;
+        //Texture2D texture = new Texture2D(tileSize, tileSize, TextureFormat.RGB24, false);
+        //texture.filterMode = FilterMode.Trilinear;
+        //texture.anisoLevel = 9;
+        //www.LoadImageIntoTexture(texture);
+        //GetComponent<Renderer>().material.mainTexture = texture;
+
+        WWW[] WWWs = new WWW[urls.Length];
+        for (int i = 0; i < urls.Length; i++)
+        {
+            string url = urls[i];
+            WWW tileWWW = new WWW(url);
+            WWWs[i] = tileWWW;
+        }
+
+        foreach (WWW tileWWW in WWWs)
+        {
+            yield return tileWWW;
+        }
+
+        Texture2DArray mainTexture = new Texture2DArray(tileSize, tileSize, urls.Length, TextureFormat.RGBA32, false);
+
+        for (int i = 0; i < urls.Length; i++)
+        {
+            WWW tileWWW = WWWs[i];
+            Texture2D tileTexture = new Texture2D(tileSize, tileSize, TextureFormat.RGB24, false);
+            // tileTexture.filterMode = FilterMode.Trilinear;
+            // tileTexture.anisoLevel = 9;
+            // tileTexture.wrapMode = TextureWrapMode.Clamp;
+            tileWWW.LoadImageIntoTexture(tileTexture);
+            mainTexture.SetPixels(tileTexture.GetPixels(), i);
+        }
+        mainTexture.wrapMode = TextureWrapMode.Clamp;
+        mainTexture.anisoLevel = 9;
+        mainTexture.filterMode = FilterMode.Trilinear;
+        mainTexture.Apply();
+        GetComponent<Renderer>().material.SetTexture("_TexArray", mainTexture);
     }
 
     public void GenerateMesh()

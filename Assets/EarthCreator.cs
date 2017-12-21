@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public static class OctahedronSphereCreator
+public static class EarthCreator
 {
     private static Vector3[] directions = {
             Vector3.left,
@@ -160,6 +160,9 @@ public static class OctahedronSphereCreator
     private static void CreateUV(Vector3[] vertices, Vector2[] uv)
     {
         float previousX = 1f;
+        float maxLatitude = (360f * Mathf.Atan(Mathf.Exp(Mathf.PI)) / Mathf.PI - 90f) * Mathf.Deg2Rad;
+        float maxSin = Mathf.Sin(maxLatitude);
+        float maxY = Mathf.Log((1f + maxSin) / (1f - maxSin));
         for (int i = 0; i < vertices.Length; i++)
         {
             Vector3 v = vertices[i];
@@ -174,7 +177,11 @@ public static class OctahedronSphereCreator
             {
                 textureCoordinates.x += 1f;
             }
-            textureCoordinates.y = Mathf.Asin(v.y) / Mathf.PI + 0.5f;
+
+            float latitude = Mathf.Asin(v.y);
+            float sin = Mathf.Sin(Mathf.Clamp(latitude, -maxLatitude, maxLatitude));
+            float y = Mathf.Log((1f + sin) / (1f - sin));
+            textureCoordinates.y = y / maxY / 2f + 0.5f;
             uv[i] = textureCoordinates;
         }
         uv[vertices.Length - 4].x = uv[0].x = 0.125f;

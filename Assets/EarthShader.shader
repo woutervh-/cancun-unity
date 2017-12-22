@@ -2,8 +2,8 @@
 {
 	Properties
 	{
-		_TexArray ("Tex", 2DArray) = "" {}
-		_MainTex ("Texture", 2D) = "white" {}
+		_Textures ("Textures", 2DArray) = "" {}
+		_TileCount ("Tiles", Int) = 0
 	}
 	SubShader
 	{
@@ -33,31 +33,28 @@
 				float4 vertex : SV_POSITION;
 			};
 
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
+			float4 _Textures_ST;
 			
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				UNITY_TRANSFER_FOG(o,o.vertex);
+				o.uv = TRANSFORM_TEX(v.uv, _Textures);
+				UNITY_TRANSFER_FOG(o, o.vertex);
 				return o;
 			}
 
-			UNITY_DECLARE_TEX2DARRAY(_TexArray);
+			UNITY_DECLARE_TEX2DARRAY(_Textures);
+			int _TileCount;
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				// sample the texture
-				// fixed4 col = tex2D(_MainTex, i.uv);
-
 				fixed4 col = UNITY_SAMPLE_TEX2DARRAY(
-					_TexArray,
+					_Textures,
 					fixed3(
-						(i.uv.x * 2) % 1,
-						(i.uv.y * 2) % 1,
-						floor(i.uv.x * 2) + floor(2 - i.uv.y * 2) * 2
+						(i.uv.x * _TileCount) % 1,
+						(i.uv.y * _TileCount) % 1,
+						floor(i.uv.x * _TileCount) + floor(_TileCount - i.uv.y * _TileCount) * _TileCount
 					)
 				);
 

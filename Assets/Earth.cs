@@ -13,20 +13,15 @@ public class Earth : MonoBehaviour
 
     private static int tileSize = 256;
 
-    private string url = "https://api.tomtom.com/map/1/tile/basic/main/0/0/0.png?key=zu3b4a3g2x87pc2sdqeb6put";
+    private static string urlTemplate = "https://api.tomtom.com/map/1/tile/basic/main/{z}/{x}/{y}.png?key=zu3b4a3g2x87pc2sdqeb6put";
 
-    private string[] urls = new string[] {
-        "https://api.tomtom.com/map/1/tile/basic/main/1/0/0.png?key=zu3b4a3g2x87pc2sdqeb6put",
-        "https://api.tomtom.com/map/1/tile/basic/main/1/1/0.png?key=zu3b4a3g2x87pc2sdqeb6put",
-        "https://api.tomtom.com/map/1/tile/basic/main/1/0/1.png?key=zu3b4a3g2x87pc2sdqeb6put",
-        "https://api.tomtom.com/map/1/tile/basic/main/1/1/1.png?key=zu3b4a3g2x87pc2sdqeb6put"
-    };
+    private int oldZoomLevel = 0;
 
     // Use this for initialization
     private IEnumerator Start()
     {
         GenerateMesh();
-        yield return GenerateTexture();
+        yield return GenerateTexture(0);
     }
 
     // Update is called once per frame
@@ -36,20 +31,31 @@ public class Earth : MonoBehaviour
         float earthPixelRadius = unitPixelRadius / 2;
         float earthPixelArea = Mathf.PI * earthPixelRadius * earthPixelRadius;
         int tilesNeeded = Mathf.CeilToInt(earthPixelArea / (tileSize * tileSize));
-        float zoomLevel = Mathf.Log(tilesNeeded, 2);
+        float zoom = Mathf.Log(tilesNeeded, 2);
+        int zoomLevel = Mathf.FloorToInt(zoom);
 
-        areaText.text = "Area: " + earthPixelArea + "p² (tiles: " + tilesNeeded + ", zoom level: " + zoomLevel + ")";
+        areaText.text = "Area: " + earthPixelArea + "p² (tiles: " + tilesNeeded + ", zoom level: " + zoom + ")";
+
+        if(zoomLevel != oldZoomLevel)
+        {
+            Debug.Log("New zoom level " + zoomLevel);
+            oldZoomLevel = zoomLevel;
+            StartCoroutine(GenerateTexture(zoomLevel));
+        }
     }
 
-    public IEnumerator GenerateTexture()
+    public IEnumerator GenerateTexture(int zoomLevel)
     {
-        //WWW www = new WWW(url);
-        //yield return www;
-        //Texture2D texture = new Texture2D(tileSize, tileSize, TextureFormat.RGB24, false);
-        //texture.filterMode = FilterMode.Trilinear;
-        //texture.anisoLevel = 9;
-        //www.LoadImageIntoTexture(texture);
-        //GetComponent<Renderer>().material.mainTexture = texture;
+        int tileCount = Mathf.FloorToInt(Mathf.Pow(2, zoomLevel));
+        string[] urls = new string[tileCount * tileCount];
+
+        for (int x = 0; x < tileCount; x++)
+        {
+            for (int y = 0; y < tileCount; y++)
+            {
+                urls[y * tileCount + x] = urlTemplate.Replace("{z}", zoomLevel.ToString()).Replace("{x}", x.ToString()).Replace("{y}", y.ToString());
+            }
+        }
 
         WWW[] WWWs = new WWW[urls.Length];
         for (int i = 0; i < urls.Length; i++)
@@ -64,23 +70,21 @@ public class Earth : MonoBehaviour
             yield return tileWWW;
         }
 
-        Texture2DArray mainTexture = new Texture2DArray(tileSize, tileSize, urls.Length, TextureFormat.RGBA32, false);
+        Texture2DArray textureArray = new Texture2DArray(tileSize, tileSize, urls.Length, TextureFormat.RGBA32, false);
 
         for (int i = 0; i < urls.Length; i++)
         {
             WWW tileWWW = WWWs[i];
             Texture2D tileTexture = new Texture2D(tileSize, tileSize, TextureFormat.RGB24, false);
-            // tileTexture.filterMode = FilterMode.Trilinear;
-            // tileTexture.anisoLevel = 9;
-            // tileTexture.wrapMode = TextureWrapMode.Clamp;
             tileWWW.LoadImageIntoTexture(tileTexture);
-            mainTexture.SetPixels(tileTexture.GetPixels(), i);
+            textureArray.SetPixels(tileTexture.GetPixels(), i);
         }
-        mainTexture.wrapMode = TextureWrapMode.Clamp;
-        mainTexture.anisoLevel = 9;
-        mainTexture.filterMode = FilterMode.Trilinear;
-        mainTexture.Apply();
-        GetComponent<Renderer>().material.SetTexture("_TexArray", mainTexture);
+        textureArray.wrapMode = TextureWrapMode.Clamp;
+        textureArray.anisoLevel = 9;
+        textureArray.filterMode = FilterMode.Trilinear;
+        textureArray.Apply();
+        GetComponent<Renderer>().material.SetInt("_TileCount", tileCount);
+        GetComponent<Renderer>().material.SetTexture("_Textures", textureArray);
     }
 
     public void GenerateMesh()
